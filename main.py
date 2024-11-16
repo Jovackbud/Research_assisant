@@ -1,30 +1,31 @@
-import json
-
-from src.reviewer import review
-from src.utils import get_pdf_files, extract_text_from_pdf, create_dataframe, save_dataframe_to_csv
-import pandas as pd
 import re
+import ast
+from src.reviewer import review
+from src.utils import get_pdf_files, extract_text_from_pdf, save_dataframe_to_csv
+import pandas as pd
 
 
 def main():
-    pdf_path = 'data/papers'
+    pdf_path = 'data/papers/13'
     pdf_files = get_pdf_files(pdf_path)
     pdf_texts = [extract_text_from_pdf(paper) for paper in pdf_files]
 
-    df = pd.DataFrame(columns=["Title of Paper", "Author", "Year of Publication", "Country of Publication",
-                               "Research Objective", "Independent Variable or Cause", "Dependent variable or Effect",
-                               "Estimation Techniques", "Theory", "Methods", "Findings", "Recommendation(s)",
-                               "Research Gap", "References", "Remarks"])
+    data = []  # List to collect each dictionary
 
     for i in range(len(pdf_files)):
-        response = review(pdf_texts[i]).split('python')
-        # Extract JSON-like content using regex
-        json_data = re.search(r'```json\n(.+)\n```', response[0], re.DOTALL).group(1)
-        result = json.loads(json_data)
-        df = pd.concat([df, pd.DataFrame([result])], ignore_index=True)
+        api_response = review(pdf_texts[i])
+        match = re.search(r"\{.*\}", api_response, re.DOTALL)
+        if match:
+            dictionary_content = match.group(0)
+            try:
+                response = ast.literal_eval(dictionary_content)
+                data.append(response)  # Collect dictionary
+            except (SyntaxError, ValueError):
+                print(f"Skipping invalid response for file {pdf_files[i]}")
 
-    df.to_csv('data/review/reviews.csv')
-    print(df.head())
+    # Convert collected data to DataFrame in one go
+    df = pd.DataFrame(data)
+    save_dataframe_to_csv(df, "data/response/review13.csv")
 
 
 if __name__ == '__main__':

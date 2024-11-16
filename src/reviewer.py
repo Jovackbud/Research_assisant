@@ -27,11 +27,26 @@ def review(paper):
     """
     review paper using a generative model.
     """
-    prompt = f""" The researcher wants you to help review a paper and return a dictionary containing the following: 
-    title of paper; author; year of publication; country of publication; research objective; independent variable or 
-    cause; dependent variable or effect; estimation techniques; theory; methods; findings, recommendation(s); 
-    research gap; references; and remarks where necessary. If any of the requested information are not available, 
-    fill it as N/A. The paper is contained here: {paper}
+    prompt = f"""The researcher wants you to help review a paper and return a Python dictionary containing the 
+    following: title of paper; author; year of publication; country of publication; research objective; independent 
+    variable or cause; dependent variable or effect; estimation techniques; theory; methods; findings, 
+    recommendation(s); research gap; references; and remarks where necessary. If any of the requested information is 
+    not available, fill it as 'N/A'. 
+
+    Return only the Python dictionary and ensure it follows this exact format with all key-value pairs enclosed 
+    in single quotation marks, as shown below:
+
+    {{
+        'title of paper': 'Sample Title',
+        'author': 'Sample Author',
+        'year of publication': 'N/A',
+        'country of publication': 'N/A',
+        'research objective': 'Sample objective here',
+        ...
+    }}
+
+    The paper is contained here: {paper}
     """
+
     response = generator_model.generate_content(prompt)
     return response.text

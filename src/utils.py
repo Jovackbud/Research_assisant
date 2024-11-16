@@ -3,6 +3,7 @@ import glob
 import os
 import pandas as pd
 
+
 def get_pdf_files(directory):
     """
     Retrieves all PDF files from the specified directory.
@@ -23,15 +24,14 @@ def extract_text_from_pdf(pdf_path):
         return ""
 
 
-def create_dataframe(names, summaries, similarities):
+def create_dataframe():
     """
-    Creates a DataFrame with names, summaries, and similarity scores.
+    Creates a DataFrame with column for all needed information.
     """
-    df = pd.DataFrame({
-        'Name': names,
-        'Summary': summaries,
-        'Score (%)': similarities
-    })
+    df = pd.DataFrame(columns=["title of paper", "author", "year of publication", "country of publication",
+                               "research objective", "independent variable or cause", "dependent variable or effect",
+                               "estimation techniques", "theory", "methods", "findings", "recommendation(s)",
+                               "research gap", "references", "remarks"])
     df.sort_values(by='Score (%)', ascending=False, inplace=True)
     return df
 
