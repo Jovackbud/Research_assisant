@@ -24,16 +24,18 @@ def extract_text_from_pdf(pdf_path):
         return ""
 
 
-def create_dataframe():
-    """
-    Creates a DataFrame with column for all needed information.
-    """
-    df = pd.DataFrame(columns=["title of paper", "author", "year of publication", "country of publication",
-                               "research objective", "independent variable or cause", "dependent variable or effect",
-                               "estimation techniques", "theory", "methods", "findings", "recommendation(s)",
-                               "research gap", "references", "remarks"])
-    df.sort_values(by='Score (%)', ascending=False, inplace=True)
-    return df
+# This function is currently unused and contained a bug causing a KeyError
+# due to sorting by a non-existent column 'Score (%)'.
+# Commenting out for now. It can be reinstated if a valid use case arises.
+# def create_dataframe():
+#     """
+#     Creates a DataFrame with column for all needed information.
+#     """
+#     df = pd.DataFrame(columns=["title of paper", "author", "year of publication", "country of publication",
+#                                "research objective", "independent variable or cause", "dependent variable or effect",
+#                                "estimation techniques", "theory", "methods", "findings", "recommendation(s)",
+#                                "research gap", "references", "remarks"])
+#     return df
 
 
 def save_dataframe_to_csv(df, output_path='data/review/output.csv'):

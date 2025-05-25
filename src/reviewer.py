@@ -1,6 +1,7 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from google.api_core.exceptions import GoogleAPIError
 
 # Load environment variables from .env file
 load_dotenv()
@@ -48,5 +49,12 @@ def review(paper):
     The paper is contained here: {paper}
     """
 
-    response = generator_model.generate_content(prompt)
-    return response.text
+    try:
+        response = generator_model.generate_content(prompt)
+        return response.text
+    except GoogleAPIError as e:
+        print(f"API Error during review: {e}")
+        return "{'error': 'API call failed during review'}"
+    except Exception as e:
+        print(f"An unexpected error occurred during review: {e}")
+        return "{'error': 'API call failed during review'}"
