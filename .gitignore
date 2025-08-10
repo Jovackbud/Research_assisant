@@ -10,7 +10,6 @@ env/
 .env/
 research_assistant/
 
-# IDEs
 .idea/
 .vscode/
 
