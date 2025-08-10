@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def main():
-    pdf_path = 'data/papers/13'
+    pdf_path = 'data/papers/PUBLIC DEBT AND WATER SUPPLY SANITATION'
     pdf_files = get_pdf_files(pdf_path)
     pdf_texts = [extract_text_from_pdf(paper) for paper in pdf_files]
 
@@ -25,7 +25,7 @@ def main():
 
     # Convert collected data to DataFrame in one go
     df = pd.DataFrame(data)
-    save_dataframe_to_csv(df, "data/response/review13.csv")
+    save_dataframe_to_csv(df, "data/response/PUBLIC DEBT AND WATER SUPPLY SANITATION.csv")
 
 
 if __name__ == '__main__':
