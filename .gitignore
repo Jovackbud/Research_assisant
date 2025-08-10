@@ -1,3 +1,27 @@
-/.env
-/research_assistant/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.env/
+research_assistant/
+
+# IDEs
+.idea/
+.vscode/
+
+# Data
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
 
