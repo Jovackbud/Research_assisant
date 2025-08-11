@@ -1,4 +1,3 @@
-
 # Python
 __pycache__/
 *.py[cod]
@@ -9,6 +8,7 @@ venv/
 env/
 .env/
 research_assistant/
+.research_assistant/
 
 .idea/
 .vscode/
@@ -24,3 +24,4 @@ Thumbs.db
 .env
 .env.*
 
+api.log

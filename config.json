@@ -1,0 +1,5 @@
+{
+  "input_folder": "data/papers/PUBLIC DEBT AND WATER SUPPLY SANITATION",
+  "output_csv": "data/response/review_output.csv",
+  "log_file": "api.log"
+}
