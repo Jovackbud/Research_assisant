@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Analysis Tool</title>
+    <!-- CORRECTED PATH -->
+    <link rel="stylesheet" href="/static/styles.css"> 
+</head>
+<body>
+<div class="container">
+    <h1>Research Paper Analysis Tool</h1>
+
+    <!-- Upload Area -->
+    <div id="upload-area">
+        <form id="upload-form">
+            <input type="file" id="file-input" name="files" multiple accept=".pdf,.docx" required>
+            <button type="submit" class="btn">Upload & Review</button>
+        </form>
+        <div id="upload-error" class="error-message"></div>
+    </div>
+
+    <!-- Loading Indicator - Hidden initially -->
+    <div id="loading-indicator" class="hidden">Processing files, please wait...</div>
+</div>
+
+<!-- CORRECTED PATH -->
+<script src="/static/upload.js"></script> 
+</body>
+</html>

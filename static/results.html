@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Analysis Tool - Results</title>
+    <!-- CORRECTED PATH -->
+    <link rel="stylesheet" href="/static/styles.css"> 
+</head>
+<body>
+<div class="container">
+    <h1>Research Paper Analysis Tool</h1>
+    
+    <div id="results-area">
+        <h2>Review Results</h2>
+        
+        <!-- Action buttons -->
+        <div class="action-buttons">
+            <button id="download-pdf" class="btn">Download Table as PDF</button>
+            <button id="download-csv" class="btn">Download Results as CSV</button>
+        </div>
+        
+        <!-- Results table -->
+        <div id="table-container"></div>
+        
+        <!-- Summary information -->
+        <div id="results-summary"></div>
+        
+        <!-- Back button -->
+        <div class="back-button-container">
+            <button id="back-btn" class="btn">Back to Upload</button>
+        </div>
+    </div>
+</div>
+
+<!-- CDN links for jspdf remain the same -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<!-- CORRECTED PATH -->
+<script src="/static/results.js"></script> 
+</body>
+</html>
