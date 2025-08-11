@@ -1,0 +1,40 @@
+# Git files
+.git/
+.gitignore
+
+# Docker files
+Dockerfile
+.dockerignore
+.gitignore
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+.env/
+
+# IDE/Editor specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local development/temporary files
+.env
+*.log
+*.DS_Store
+Thumbs.db
+
+# Data directories (unless you intend to pre-populate the image with data)
+# If you want data to be part of the image, remove these lines.
+# For most dynamic apps, data is usually mounted as a volume or handled separately.
+data/
+
+# Temporary files created during builds
+*.tmp
+research_assistant/
+.research_assistant/
