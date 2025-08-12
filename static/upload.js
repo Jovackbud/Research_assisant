@@ -1,70 +1,107 @@
-// Get references to UI elements
-const uploadForm = document.getElementById('upload-form');
-const fileInput = document.getElementById('file-input');
-const uploadErrorDiv = document.getElementById('upload-error');
-const loadingIndicator = document.getElementById('loading-indicator');
-const uploadArea = document.getElementById('upload-area');
+document.addEventListener('DOMContentLoaded', () => {
+    // Get references to UI elements - MUST BE INSIDE DOMContentLoaded
+    const uploadForm = document.getElementById('upload-form');
+    const fileInput = document.getElementById('file-input');
+    const uploadErrorDiv = document.getElementById('upload-error');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const uploadArea = document.getElementById('upload-area');
+    const fileNameDisplay = document.getElementById('file-name-display');
 
-// Event listener for file upload submission
-uploadForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Clear previous error messages
-    uploadErrorDiv.textContent = '';
-
-    const files = fileInput.files;
-    if (!files.length) {
-        uploadErrorDiv.textContent = 'Please select at least one file.';
-        return;
+    // Check if essential elements exist before proceeding
+    if (!uploadForm || !fileInput || !uploadErrorDiv || !loadingIndicator || !uploadArea || !fileNameDisplay) {
+        console.error("One or more essential UI elements not found. Check HTML IDs.");
+        return; // Stop script execution if elements are missing
     }
 
-    // Show loading state
-    uploadArea.classList.add('hidden');
-    loadingIndicator.classList.remove('hidden');
+    // Add event listener to update filename display when files are selected
+    fileInput.addEventListener('change', (e) => {
+        const files = e.target.files;
+        if (files.length === 0) {
+            fileNameDisplay.textContent = 'No files chosen';
+        } else if (files.length === 1) {
+            fileNameDisplay.textContent = files[0].name;
+        } else {
+            // Display count if multiple files are selected
+            fileNameDisplay.textContent = `${files.length} files selected`;
+        }
+    });
 
-    const formData = new FormData();
-    for (const file of files) {
-        formData.append('files', file);
-    }
+    // Event listener for file upload submission
+    uploadForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    try {
-        // Make the POST request to the API
-        const response = await fetch('/upload/', {
-            method: 'POST',
-            body: formData
-        });
-        
-        // Parse the JSON response from the server
-        const result = await response.json();
+        console.log("Submit event triggered."); // Debug 1: Confirms the submit listener fires
 
-        // Check if the response indicates an error (e.g., status code not in 2xx range)
-        if (!response.ok) {
-            // Extract error message from the server response if available
-            const errorMessage = result.detail || `Upload failed with status ${response.status}`;
-            throw new Error(errorMessage);
+        uploadErrorDiv.textContent = ''; // Clear previous error
+
+        const files = fileInput.files; // Access fileInput here, now guaranteed to exist
+        if (!files.length) {
+            console.log("No files selected, showing error."); // Debug 2: For when no files are picked
+            uploadErrorDiv.textContent = 'Please select at least one file.';
+            // Ensure loading indicator is hidden if an error occurs before upload
+            loadingIndicator.classList.add('hidden');
+            uploadArea.classList.remove('hidden');
+            return; // Exit if no files are selected
         }
 
-        // Store the entire result object (which now includes generated_csv_filename) 
-        // in sessionStorage for the results page.
-        sessionStorage.setItem('analysisResults', JSON.stringify(result));
+        console.log("Files selected. About to hide upload area and show loading indicator."); // Debug 3: Indicates files were selected
+
+        // Show loading state
+        uploadArea.classList.add('hidden');
+        loadingIndicator.classList.remove('hidden'); // This is where the "Processing..." message should appear
+
+        const formData = new FormData();
+        let appendedFilesCount = 0;
+        for (const file of files) {
+            formData.append('files', file);
+            appendedFilesCount++;
+        }
         
-        // Redirect to the results page
-        window.location.href = '/static/results.html';
+        if (appendedFilesCount === 0) {
+            console.log("Appended files count is zero, showing error."); // Debug 4: Handles edge case of empty file list despite selection
+            uploadErrorDiv.textContent = 'No files were successfully selected.';
+            loadingIndicator.classList.add('hidden'); // Hide loading indicator again
+            uploadArea.classList.remove('hidden');   // Show upload area again
+            fileNameDisplay.textContent = 'No files chosen'; // Reset filename display
+            fileInput.value = ''; // Clear the file input
+            return; // Exit
+        }
 
-    } catch (err) {
-        // Handle errors: show upload area again and display the error message
-        loadingIndicator.classList.add('hidden');
-        uploadArea.classList.remove('hidden');
-        uploadErrorDiv.textContent = err.message || 'An unexpected error occurred.';
-        console.error('Upload error:', err);
-    }
-});
+        try {
+            console.log("Initiating fetch request to /upload/"); // Debug 5: Indicates the upload process is starting
+            const response = await fetch('/upload/', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
 
-// Clear file input and error messages when the page loads
-// This ensures a clean slate for new uploads.
-document.addEventListener('DOMContentLoaded', () => {
-    // Reset the file input value
+            if (!response.ok) {
+                // If response is not OK, throw an error that will be caught below
+                const errorMessage = result.detail || `Upload failed with status ${response.status}`;
+                throw new Error(errorMessage);
+            }
+
+            console.log("Fetch successful, storing results and redirecting.");
+            sessionStorage.setItem('analysisResults', JSON.stringify(result));
+            window.location.href = '/static/results.html'; // Redirect to results page
+
+        } catch (err) {
+            console.error('Upload error caught:', err); // Debug 7: Catches any errors during fetch or JSON parsing
+            // Handle errors: show upload area again and display the error message
+            loadingIndicator.classList.add('hidden'); // Hide the loading indicator on error
+            uploadArea.classList.remove('hidden');   // Show upload area again
+            uploadErrorDiv.textContent = err.message || 'An unexpected error occurred.';
+            // Reset filename display on error
+            fileNameDisplay.textContent = 'No files chosen';
+            fileInput.value = ''; // Clear the file input
+        }
+    });
+
+    // Reset UI elements on page load - this part was already correctly wrapped
+    console.log("DOM fully loaded. Resetting UI elements.");
     fileInput.value = '';
-    // Clear any potential error messages from a previous failed attempt
+    fileNameDisplay.textContent = 'No files chosen';
     uploadErrorDiv.textContent = '';
+    loadingIndicator.classList.add('hidden'); // Ensure loading indicator is hidden on initial load
 });

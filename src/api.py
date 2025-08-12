@@ -124,6 +124,7 @@ async def upload_files(files: List[UploadFile] = File(...)):
 
     # Track the filename generated for this batch
     generated_csv_filename = None 
+    generated_pdf_filename = None
 
     for file in files:
         temp_file_path = None
@@ -214,8 +215,13 @@ async def upload_files(files: List[UploadFile] = File(...)):
             # Generate a unique filename with timestamp and UUID for this batch
             timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
             unique_id = uuid.uuid4()
-            # This is the filename we will return to the frontend
+            
+            # --- CSV Filename Generation ---
             generated_csv_filename = f"review_results_{timestamp_str}_{unique_id}.csv"
+            
+            # --- PDF Filename Generation ---
+            # Use a similar pattern for the PDF filename
+            generated_pdf_filename = f"review_results_{timestamp_str}_{unique_id}.pdf"
 
             # Ensure the output directory exists using the base path from config
             output_dir = os.path.dirname(output_csv_base_path)
@@ -232,22 +238,24 @@ async def upload_files(files: List[UploadFile] = File(...)):
         except Exception as e:
             logging.error(f"Failed to save CSV: {e}")
             # Reset filename if saving fails, so it's not returned as generated
-            generated_csv_filename = None 
+            generated_csv_filename = None
+            generated_pdf_filename = None
     else:
         logging.warning("No data processed successfully to save.")
 
-    # Return status including whether CSV was generated for this batch and its filename
     return JSONResponse({
         "total_files_uploaded": len(files),
         "files_processed_successfully": len(processed_data),
         "files_failed_or_skipped": len(failed_files_list),
         "failed_files_details": failed_files_list,
-        "results_preview": processed_data[:5], # Show a preview of successful results
-        "csv_generated": csv_was_generated, # Indicate if a CSV was saved for this batch
-        "generated_csv_filename": generated_csv_filename # <-- New: return the filename of the saved CSV
+        "results_preview": processed_data[:5],
+        "all_processed_data": processed_data,
+        "csv_generated": csv_was_generated,
+        "generated_csv_filename": generated_csv_filename,
+        "generated_pdf_filename": generated_pdf_filename
     })
 
-# MODIFIED Endpoint to download a SPECIFIC generated CSV file
+
 # The route now accepts a filename parameter.
 @app.get("/download/csv/{filename}") 
 async def download_specific_csv(filename: str): # Added filename parameter

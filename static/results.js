@@ -2,13 +2,16 @@
 const tableContainer = document.getElementById('table-container');
 const downloadPdfBtn = document.getElementById('download-pdf');
 const downloadCsvBtn = document.getElementById('download-csv');
-const resultsSummary = document.getElementById('results-summary');
+const resultsSummaryDiv = document.getElementById('results-summary'); // Renamed for clarity
 const backBtn = document.getElementById('back-btn');
+const apiKeyWarningDiv = document.getElementById('api-key-warning'); // Get the new warning div
 
-// Store current table data for PDF generation
-let currentTableData = null;
+// Store ALL processed data for PDF generation and table display
+let currentFullTableData = null;
 // Store the filename for the CSV download
-let currentCsvFilename = null; // <-- NEW: Variable to store the filename
+let currentCsvFilename = null;
+// Store the filename for the PDF download
+let currentPdfFilename = null; // <-- NEW: Variable to store the PDF filename
 
 // Initialize page when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -16,61 +19,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsDataString = sessionStorage.getItem('analysisResults');
     
     if (!resultsDataString) {
-        // No results found - redirect back to upload page using the correct static path
         alert('No analysis results found. Redirecting to upload page.');
-        window.location.href = '/static/index.html'; // <-- CORRECTED REDIRECT
+        window.location.href = '/static/index.html'; // CORRECTED REDIRECT
         return;
     }
 
     try {
         const result = JSON.parse(resultsDataString);
-        displayResults(result); // This function will now handle enabling/disabling buttons based on result data
+        
+        displaySummary(result);
 
-        // Store the CSV filename if available and enable the button
-        if (result.csv_generated && result.generated_csv_filename) {
-            currentCsvFilename = result.generated_csv_filename; // <-- Store the filename
-            downloadCsvBtn.disabled = false; // Ensure button is enabled if filename is present
+        // Store ALL processed data for PDF generation and table display
+        currentFullTableData = result.all_processed_data || []; 
+        
+        // Display table with ALL data if available, otherwise show a message
+        if (currentFullTableData.length > 0) {
+            renderTable(currentFullTableData); // Render the full data
+            downloadPdfBtn.disabled = false; // Enable PDF button only if we have data
         } else {
-            currentCsvFilename = null; // Clear filename if not generated
-            downloadCsvBtn.disabled = true; // Disable button if no filename
+            tableContainer.innerHTML = '<p class="text-center">No structured data returned for display.</p>';
+            downloadPdfBtn.disabled = true;
         }
+
+        // Handle CSV download button enablement
+        if (result.csv_generated && result.generated_csv_filename) {
+            currentCsvFilename = result.generated_csv_filename;
+            downloadCsvBtn.disabled = false;
+        } else {
+            currentCsvFilename = null;
+            downloadCsvBtn.disabled = true;
+        }
+        
+        // --- Store PDF Filename ---
+        // Use the new 'generated_pdf_filename' key from the backend response
+        if (result.generated_pdf_filename) {
+            currentPdfFilename = result.generated_pdf_filename;
+            // The PDF button enablement is already handled by checking currentFullTableData.length
+        } else {
+            currentPdfFilename = null; // Ensure filename is cleared if not generated
+        }
+        // --- END Store PDF Filename ---
+
+        // API Key Warning Logic
+        const isApiKeyIssue = result.files_processed_successfully === 0 && 
+                              result.files_failed_or_skipped > 0 &&
+                              result.failed_files_details.some(detail => detail.includes("API key missing or invalid"));
+
+        if (isApiKeyIssue) {
+            apiKeyWarningDiv.textContent = "Error: Google AI API key is missing or invalid. AI review could not be performed. Please check your server configuration and ensure the 'google_ai_studio_key' is set in your .env file.";
+            apiKeyWarningDiv.classList.remove('hidden');
+            // Disable download buttons if no data was processed due to API key issue
+            downloadPdfBtn.disabled = true;
+            downloadCsvBtn.disabled = true;
+        } else {
+            // Ensure the warning div is hidden if it's not an API key issue
+            apiKeyWarningDiv.classList.add('hidden'); 
+        }
+
     } catch (err) {
         console.error('Error parsing results:', err);
         alert('Error loading results. Redirecting to upload page.');
-        window.location.href = '/static/index.html'; // <-- CORRECTED REDIRECT
+        window.location.href = '/static/index.html'; // CORRECTED REDIRECT
     }
 });
 
-// Function to display results
-function displayResults(result) {
-    // Display summary information
+// Function to display summary information
+function displaySummary(result) {
     let summaryHtml = `<p><strong>Files Uploaded:</strong> ${result.total_files_uploaded || 0}</p>`;
     summaryHtml += `<p><strong>Successfully Processed:</strong> ${result.files_processed_successfully || 0}</p>`;
     summaryHtml += `<p><strong>Failed/Skipped:</strong> ${result.files_failed_or_skipped || 0}</p>`;
     
     if (result.failed_files_details && result.failed_files_details.length > 0) {
-        summaryHtml += `<p class="error-message">Failed files: ${result.failed_files_details.join(', ')}</p>`;
+        // Filter out API key errors from the general list if we're showing the specific warning above
+        const nonApiKeyErrors = result.failed_files_details.filter(detail => !detail.includes("API key missing or invalid"));
+        if (nonApiKeyErrors.length > 0) {
+            summaryHtml += `<p class="error-message">Failed files: ${nonApiKeyErrors.join(', ')}</p>`;
+        }
     }
     
-    resultsSummary.innerHTML = summaryHtml;
-
-    // Display results table
-    if (result.results_preview && result.results_preview.length > 0) {
-        renderTable(result.results_preview);
-        currentTableData = result.results_preview;
-        downloadPdfBtn.disabled = false;
-    } else {
-        tableContainer.innerHTML = '<p class="text-center">No structured data returned for display.</p>';
-        downloadPdfBtn.disabled = true;
-    }
-
-    // Enable CSV download button if a filename is available from the analysis results
-    // This logic is somewhat redundant with the DOMContentLoaded section but ensures it's updated if displayResults is called elsewhere.
-    if (result.csv_generated && result.generated_csv_filename) {
-        downloadCsvBtn.disabled = false;
-    } else {
-        downloadCsvBtn.disabled = true;
-    }
+    resultsSummaryDiv.innerHTML = summaryHtml;
 }
 
 // Function to render the HTML table
@@ -86,7 +113,6 @@ function renderTable(data) {
     // Table Header
     html += '<thead><tr>';
     for (const header of headers) {
-        // Format header for display (e.g., "title_of_paper" -> "Title Of Paper")
         const formattedHeader = header.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
         html += `<th>${formattedHeader}</th>`;
     }
@@ -97,18 +123,12 @@ function renderTable(data) {
     data.forEach(row => {
         html += '<tr>';
         headers.forEach(header => {
-            // Handle null, empty strings, or 'N/A' for display
             const cellContent = row[header] === null || row[header] === '' || row[header] === 'N/A' 
                 ? 'N/A' 
                 : row[header];
             
-            // IMPORTANT: Ensure newlines are correctly represented for autoTable to break lines.
-            // If your text extraction might produce escaped newlines like '\\n', convert them.
-            // Assuming typical text extraction, '\n' should be fine. If issues arise, uncomment the replace line.
             let processedContent = String(cellContent);
-            // processedContent = processedContent.replace(/\\n/g, "\n"); // Uncomment if your text has escaped newlines
-
-            html += `<td>${escapeHtml(processedContent)}</td>`; // Use escaped content
+            html += `<td>${escapeHtml(processedContent)}</td>`;
         });
         html += '</tr>';
     });
@@ -130,77 +150,82 @@ function escapeHtml(unsafe) {
 
 // Event listener for PDF download
 downloadPdfBtn.addEventListener('click', () => {
-    if (!currentTableData || !currentTableData.length) {
-        alert("No data available to download.");
+    if (!currentFullTableData || !currentFullTableData.length) {
+        alert("No data available to generate PDF.");
         return;
     }
 
     try {
-        const headers = Object.keys(currentTableData[0]);
+        const headers = Object.keys(currentFullTableData[0]);
         const formattedHeaders = headers.map(h => 
             h.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase())
         );
         
-        const rows = currentTableData.map(row => {
+        const rows = currentFullTableData.map(row => {
             return headers.map(header => {
                 const cellContent = row[header] === null || row[header] === '' || row[header] === 'N/A' 
                     ? 'N/A' 
                     : row[header];
                 
                 let processedContent = String(cellContent);
-                // processedContent = processedContent.replace(/\\n/g, "\n"); // Uncomment if your text has escaped newlines
-
                 return processedContent;
             });
         });
 
         const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
+        const doc = new jsPDF({ orientation: 'landscape' }); 
 
         doc.setFontSize(16);
         doc.text("Research Paper Review Results", 10, 15);
 
-        // Define common styles for all cells, improving readability
         const commonCellStyles = { 
-            fontSize: 11,       // INCREASED FONT SIZE for better readability
-            cellPadding: 5,     // INCREASED CELL PADDING for more space around text
-            overflow: 'linebreak', // Use line breaks to wrap text within cells
-            valign: 'middle',   // Vertically align text in the middle of the cell
-            // Consider adding 'halign: "left"' if alignment isn't correct, though usually default is left.
+            fontSize: 9,
+            cellPadding: 3,
+            overflow: 'linebreak',
+            valign: 'top',
         };
 
-        // Add specific styles for headers for consistency
         const headerStyles = {
-            ...commonCellStyles, // Inherit common styles
-            fontSize: 12,         // Slightly larger font for headers
+            ...commonCellStyles,
+            fontSize: 10,
             fontStyle: 'bold',
-            fillColor: [233, 236, 239], // Light grey background
-            textColor: [73, 80, 87],    // Dark grey text
-            lineWidth: 0.5,             // Border width for headers
-            lineColor: [221, 221, 221]  // Light grey border color
+            fillColor: [233, 236, 239],
+            textColor: [73, 80, 87],
+            lineWidth: 0.5,
+            lineColor: [221, 221, 221]
         };
-        
-        // If specific columns need fixed widths (e.g., long titles)
-        // const columnStyles = {
-        //     'title_of_paper': { cellWidth: 70 }, 
-        //     'research_objective': { cellWidth: 80 }
-        // };
+
+        const columnStyles = {
+            'title_of_paper': { columnWidth: 50 },
+            'author': { columnWidth: 40 },
+            'year_of_publication': { columnWidth: 20 },
+            'country_of_publication': { columnWidth: 25 },
+            'research_objective': { columnWidth: 50 },
+            'independent_variable_or_cause': { columnWidth: 40 },
+            'dependent_variable_or_effect': { columnWidth: 40 },
+            'estimation_techniques': { columnWidth: 40 },
+            'theory': { columnWidth: 40 },
+            'methods': { columnWidth: 45 },
+            'findings': { columnWidth: 55 },
+            'recommendations': { columnWidth: 50 },
+            'research_gap': { columnWidth: 45 },
+            'references': { columnWidth: 35 },
+            'remarks': { columnWidth: 35 }
+        };
 
         doc.autoTable({
-            head: [formattedHeaders], // Headers for the table
-            body: rows,               // Data rows for the table
-            startY: 25,               // Start table below the title
-            theme: 'striped',         // Use a striped theme (alternating row colors)
-            headStyles: headerStyles, // Apply header styles
-            styles: commonCellStyles, // Apply common styles to all cells (unless overridden by columnStyles)
-            // columnStyles: columnStyles, // Uncomment and define if specific column tuning is needed
-            margin: { top: 20, left: 10, right: 10, bottom: 20 }, // Margins for the PDF page
+            head: [formattedHeaders],
+            body: rows,
+            startY: 25,
+            theme: 'striped',
+            headStyles: headerStyles,
+            styles: commonCellStyles,
+            columnStyles: columnStyles,
+            margin: { top: 20, left: 5, right: 5, bottom: 20 },
             didDrawPage: function(data) {
-                // Add page numbers if the table spans multiple pages
-                if (data.pageCount > 1) { // Only add page numbers if there's more than one page
+                if (data.pageCount > 1) {
                     let pageText = `Page ${data.pageNumber}`;
-                    doc.setFontSize(10); // Smaller font for page number
-                    // Position the page number at the bottom center
+                    doc.setFontSize(10);
                     const pageSize = doc.internal.pageSize;
                     const pageHeight = pageSize.height;
                     const pageWidth = pageSize.width;
@@ -209,73 +234,61 @@ downloadPdfBtn.addEventListener('click', () => {
             }
         });
 
-        doc.save('review_results.pdf');
+        // MODIFIED PDF Save: Use the dynamically generated filename
+        doc.save(currentPdfFilename || 'review_results.pdf'); // <-- Use dynamic filename, with fallback
     } catch (err) {
         console.error('PDF generation error:', err);
         alert('Error generating PDF. Please try again.');
     }
 });
 
-// Event listener for CSV download
+// Event listener for CSV download (remains the same)
 downloadCsvBtn.addEventListener('click', async () => {
-    // --- MODIFIED SECTION START ---
-    // Check if we have a filename stored from the upload process
     if (!currentCsvFilename) {
         alert("No specific CSV file available for download. Please ensure analysis was completed successfully.");
         return;
     }
 
     try {
-        // Construct the download URL using the specific filename
-        // encodeURIComponent is used to safely include the filename in the URL
         const downloadUrl = `/download/csv/${encodeURIComponent(currentCsvFilename)}`; 
         
         const response = await fetch(downloadUrl);
 
         if (!response.ok) {
-            // Attempt to parse error message from server response
             let errorDetail = `Server responded with status ${response.status}`;
             try {
                 const errorData = await response.json();
                 errorDetail = errorData.detail || errorDetail;
-            } catch (jsonError) {
-                // If response is not JSON or empty, use the status code
-            }
+            } catch (jsonError) {}
             alert(`Failed to download CSV: ${errorDetail}`);
             return;
         }
 
-        // The server now includes the filename in Content-Disposition, but we can use our stored filename as a fallback.
         const disposition = response.headers.get('Content-Disposition');
-        let filename = currentCsvFilename; // Default to the filename we know
+        let filename = currentCsvFilename;
         if (disposition && disposition.includes('filename=')) {
-            // Extract filename from header if present
             filename = disposition.split('filename=')[1].replace(/"/g, '');
         }
 
-        // Download the file using Blob and createObjectURL
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = filename; // Set the download attribute to the filename
+        a.download = filename;
         document.body.appendChild(a);
-        a.click(); // Programmatically click the link to trigger download
-        window.URL.revokeObjectURL(url); // Clean up the object URL
+        a.click();
+        window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
     } catch (err) {
         console.error("Error during CSV download:", err);
         alert("An error occurred while downloading the CSV file.");
     }
-    // --- MODIFIED SECTION END ---
 });
 
 // Event listener for back button
 backBtn.addEventListener('click', () => {
-    // Clear stored results when navigating back
     sessionStorage.removeItem('analysisResults');
-    // Redirect to upload page using the correct static path
-    window.location.href = '/static/index.html'; // <-- CORRECTED REDIRECT
+    window.location.href = '/static/index.html'; // CORRECTED REDIRECT
 });

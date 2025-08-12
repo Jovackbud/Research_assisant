@@ -6,7 +6,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1000px; /* Increased max-width to accommodate wider content */
     margin: auto;
     background-color: #fff;
     padding: 30px;
@@ -25,25 +25,90 @@ h2 {
     margin-bottom: 20px;
 }
 
+/* Enhanced Header */
+.header-section {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header-section h1 {
+    color: #0056b3;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Space between icon and text */
+}
+
+.header-icon {
+    width: 40px; /* Adjust size as needed */
+    height: 40px;
+    vertical-align: middle;
+}
+
+.subtitle {
+    color: #555;
+    font-size: 1.1em;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
 /* Upload area styles */
 #upload-area {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 30px;
-    padding: 20px;
+    gap: 15px; /* Spacing between h2, form, and error div */
+    margin-bottom: 40px; /* Increased margin */
+    padding: 30px; /* Increased padding */
     border: 1px dashed #ccc;
-    border-radius: 5px;
-    background-color: #fafafa;
+    border-radius: 8px; /* Slightly more rounded */
+    background-color: #fdfdfd; /* Lighter background */
 }
 
-#file-input {
+#upload-area h2 {
+    color: #0056b3;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.file-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Spacing within the wrapper (between label and filename display) */
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
+    flex-wrap: wrap;
+    margin-bottom: 15px; /* This creates space between the file selection area and the button below */
+}
+
+/* Hide the default file input */
+#file-input {
+    display: none;
+}
+
+.file-label {
+    padding: 12px 20px;
+    background: #0078d7;
+    color: #fff;
     border-radius: 4px;
-    box-sizing: border-box;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Prevent label text from breaking */
+}
+
+.file-label:hover {
+    background: #005fa8;
+}
+
+#file-name-display {
+    flex-grow: 1; /* Takes up remaining space */
+    color: #666;
+    font-style: italic;
+    text-overflow: ellipsis; /* Add ellipsis for long filenames */
+    white-space: nowrap;
+    overflow: hidden;
+    min-width: 150px; /* Ensure it has some width before overflowing */
 }
 
 /* General button styles */
@@ -66,6 +131,13 @@ h2 {
 .btn:disabled {
     background: #aaa;
     cursor: not-allowed;
+}
+
+.primary-btn { /* Style for the main upload button */
+    background-color: #0078d7; /* Primary action color */
+}
+.primary-btn:hover {
+    background-color: #005fa8;
 }
 
 /* Specific button styles */
@@ -104,87 +176,23 @@ h2 {
 #loading-indicator {
     text-align: center;
     font-size: 1.1em;
-    color: #0078d7;
+    color: #0078d7; /* Standard blue color */
     margin-top: 20px;
     padding: 40px;
+    
+    /* Visual enhancements */
+    background-color: #e7f3ff; /* Light blue background */
+    border: 1px solid #b3d7ff; /* Subtle blue border */
+    border-radius: 8px;
+    font-weight: bold; /* Make text bold */
+
+    /* REMOVED conflicting display properties to ensure 'hidden' class works correctly */
+    /* display: block; */
 }
 
-/* Results summary styles */
-#results-summary {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    border-left: 4px solid #0078d7;
-}
-
-#results-summary p {
-    margin: 5px 0;
-}
-
-/* Table styles */
-#table-container {
-    margin: 20px 0;
-    overflow-x: auto; /* Allows horizontal scrolling for tables on small screens */
-}
-
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 20px 0;
-    /* Added for better cell fitting */
-    table-layout: auto; 
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: left;
-    word-wrap: break-word;
-    /* Added for better text wrapping and browser compatibility */
-    overflow-wrap: break-word; 
-    white-space: normal; /* Ensures text wraps correctly */
-}
-
-th {
-    background: #e9ecef;
-    font-weight: bold;
-    color: #495057;
-    position: sticky;
-    top: 0;
-    z-index: 10; /* Ensure sticky headers are above table body content */
-}
-
-tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-tr:hover {
-    background-color: #e8f4fd;
-}
-
-/* Message styles */
-.error-message {
-    color: #d43e46;
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    background-color: #f8d7da;
-    border: 1px solid #f1aeb5;
-    border-radius: 4px;
-    margin: 10px 0;
-}
-
-.success-message {
-    color: #28a745;
-    font-weight: bold;
-    text-align: center;
-    padding: 10px;
-    background-color: #d4edda;
-    border: 1px solid #c3e6cb;
-    border-radius: 4px;
-    margin: 10px 0;
-}
+/* Ensure that when the 'hidden' class is removed, the element is displayed. */
+/* Relying on the default display of a div (block) when the hidden class is not present. */
+/* The .hidden class already handles display: none; */
 
 /* Utility classes */
 .hidden {
@@ -195,32 +203,146 @@ tr:hover {
     text-align: center;
 }
 
+/* Informative section styles */
+#info-section {
+    text-align: center;
+    margin-top: 40px;
+    padding: 30px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+#info-section h2 {
+    color: #0056b3;
+    margin-bottom: 25px;
+}
+
+.steps-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+/* NEW CLASS FOR COMPACT STEPS */
+.steps-container.compact-steps {
+    flex-direction: column; /* Stack steps vertically */
+    align-items: flex-start; /* Align items to the start */
+    gap: 10px; /* Reduce gap between steps */
+}
+
+.step {
+    flex: 1;
+    max-width: 100%; /* Allow it to take available width */
+    text-align: left; /* Align text to the left within each step */
+    width: 100%; /* Ensure it takes full width if parent allows */
+}
+
+/* NEW CLASS FOR COMPACT STEP's PARAGRAPH */
+.compact-step p {
+    margin: 0; /* Remove default paragraph margin */
+    line-height: 1.3; /* Adjusted line-height for less aggressive wrapping */
+    color: #555;
+    font-size: 1.05em; /* Slightly larger font for the steps */
+    white-space: normal; /* Ensures text respects normal wrapping behavior */
+    word-break: break-word; /* Standard word break */
+    overflow-wrap: break-word; /* Standard overflow wrap */
+}
+
+.compact-step p strong {
+    color: #0056b3; /* Make the step number and title stand out */
+    margin-right: 5px; /* Space between title and description */
+}
+
+/* The original .step-icon is no longer used, can be removed or ignored if not affecting other parts */
+.step-icon {
+    background-color: #0078d7;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 0 auto 15px auto;
+}
+
+
+.supported-formats {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #333;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     body {
         margin: 20px;
     }
-    
+
     .container {
         padding: 20px;
     }
-    
+
+    .header-section h1 {
+        flex-direction: column;
+        gap: 5px;
+    }
+    .header-icon {
+        margin-bottom: 10px;
+    }
+    .subtitle {
+        font-size: 1em;
+    }
+
+    .file-input-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 10px; /* Adjusted margin for smaller screens */
+    }
+    #file-name-display {
+        text-align: center;
+        margin-top: 5px;
+    }
+
+    .btn {
+        margin: 5px 0;
+        width: 100%;
+        max-width: 250px; /* Keep buttons reasonably sized */
+        margin-left: auto; /* Center buttons */
+        margin-right: auto;
+    }
+
     .action-buttons {
         flex-direction: column;
         align-items: center;
     }
-    
-    .btn {
-        margin: 5px 0;
-        width: 100%;
-        max-width: 250px;
-    }
-    
+
     table {
-        font-size: 14px;
+        font-size: 12px; /* Slightly larger for tables on smaller screens */
+    }
+
+    th, td {
+        padding: 8px; /* Adjusted padding for smaller screens */
     }
     
-    th, td {
-        padding: 8px;
+    /* Adjustments for the info section on smaller screens */
+    .steps-container {
+        flex-direction: column; /* Already set for compact view */
+        align-items: flex-start; /* Already set for compact view */
+        gap: 10px; /* Already set for compact view */
+    }
+    .step {
+        min-width: unset; /* Remove min-width for column layout */
+        max-width: 100%;
+        text-align: left; /* Ensure text is left-aligned */
+    }
+    .compact-step p {
+        font-size: 1em; /* Adjust font size for very small screens if needed */
     }
 }

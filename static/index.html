@@ -5,26 +5,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research Paper Analysis Tool</title>
     <!-- CORRECTED PATH -->
-    <link rel="stylesheet" href="/static/styles.css"> 
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
 <div class="container">
+    <!-- Enhanced Header -->
+    <div class="header-section">
     <h1>Research Paper Analysis Tool</h1>
+        <p class="subtitle">Upload your research papers (PDF/DOCX) and let our AI assistant extract key information for you.</p>
+    </div>
 
     <!-- Upload Area -->
     <div id="upload-area">
+        <h2>Upload Your Documents</h2>
         <form id="upload-form">
-            <input type="file" id="file-input" name="files" multiple accept=".pdf,.docx" required>
-            <button type="submit" class="btn">Upload & Review</button>
+            <div class="file-input-wrapper">
+                <input type="file" id="file-input" name="files" multiple accept=".pdf,.docx" required>
+                <label for="file-input" class="file-label">Choose Files</label>
+                <span id="file-name-display">No files chosen</span>
+            </div>
+            <button type="submit" class="btn primary-btn">Upload & Review</button>
         </form>
-        <div id="upload-error" class="error-message"></div>
+        <div id="upload-error" class="error-message hidden"></div>
+    </div>
+
+    <!-- Informative Section -->
+    <div id="info-section">
+        <h2>How it Works</h2>
+        <div class="steps-container compact-steps">
+            <div class="step compact-step">
+                <p><strong>1. Upload Files:</strong> Select one or more PDF or DOCX files containing research papers.</p>
+            </div>
+            <div class="step compact-step">
+                <p><strong>2. AI Review:</strong> Our AI analyzes the content, extracting key details like objectives, findings, and methodology.</p>
+            </div>
+            <div class="step compact-step">
+                <p><strong>3. View Results:</strong> See a summary and preview of the extracted data, with options to download the full results.</p>
+            </div>
+        </div>
+        <p class="supported-formats"><strong>Supported Formats:</strong> .pdf, .docx</p>
     </div>
 
     <!-- Loading Indicator - Hidden initially -->
     <div id="loading-indicator" class="hidden">Processing files, please wait...</div>
 </div>
 
-<!-- CORRECTED PATH -->
-<script src="/static/upload.js"></script> 
+<!-- Script -->
+<script src="/static/upload.js"></script>
 </body>
 </html>
